@@ -43,7 +43,7 @@ fun MonthCalendarView(currentDate: LocalDate) {
             .height(ModeHeight.Month),
         verticalArrangement = Arrangement.Top
     ) {
-        CalendarHeader(date = currentDate)
+        Header(date = currentDate)
         Spacer (modifier = Modifier.size(8.dp))
         DayOfWeek()
         DaysOfMonth()
@@ -51,7 +51,7 @@ fun MonthCalendarView(currentDate: LocalDate) {
 }
 
 @Composable
-private fun CalendarHeader(date: LocalDate) {
+private fun Header(date: LocalDate) {
     Row (
         modifier = Modifier
             .fillMaxWidth()

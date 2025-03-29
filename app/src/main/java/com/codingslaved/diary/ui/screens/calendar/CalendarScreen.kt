@@ -83,7 +83,7 @@ fun CalendarScreen() {
                     .fillMaxWidth()
                     .wrapContentHeight()
             ) {
-                CalendarScreenHeader(
+                Header(
                     mode = currentMode,
                     onChnageMode = {
                         currentMode = if (currentMode == Mode.MONTH) Mode.WEEK else Mode.MONTH
@@ -119,7 +119,7 @@ fun CalendarScreen() {
 }
 
 @Composable
-fun CalendarScreenHeader(mode: Mode = Mode.MONTH, onChnageMode: () -> Unit = {}) {
+private fun Header(mode: Mode = Mode.MONTH, onChnageMode: () -> Unit = {}) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -152,7 +152,7 @@ fun CalendarScreenHeader(mode: Mode = Mode.MONTH, onChnageMode: () -> Unit = {})
 }
 
 @Composable
-fun ScheduleContent(modifier: Modifier = Modifier) {
+private fun ScheduleContent(modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()
     Card(
         elevation = CardDefaults.cardElevation(
