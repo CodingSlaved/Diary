@@ -1,7 +1,8 @@
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -23,6 +25,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,25 +39,57 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codingslaved.diary.R
 import com.codingslaved.diary.ui.screens.calendar.ModeHeight
-import java.time.LocalDate
+import com.codingslaved.diary.ui.screens.calendar.month.MonthViewModel
 import java.time.YearMonth
 
 @Composable
-fun MonthCalendarView(currentDate: LocalDate) {
+fun MonthCalendarView() {
+    val dataSource = MonthDataSource()
+    var monthViewModel by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
+
     Column (
         modifier = Modifier
             .height(ModeHeight.Month),
         verticalArrangement = Arrangement.Top
     ) {
-        Header(date = currentDate)
+        MonthHeader(
+            yearMonth = monthViewModel.currentMonth,
+            onPrevClick = { yearMonth ->
+                monthViewModel = dataSource.getData(currentMonth = yearMonth, monthViewModel.selectedDate.date)
+            },
+            onNextClick = { yearMonth ->
+                monthViewModel = dataSource.getData(currentMonth = yearMonth, monthViewModel.selectedDate.date)
+            }
+        )
         Spacer (modifier = Modifier.size(8.dp))
-        DayOfWeek()
-        DaysOfMonth()
+        MonthDayOfWeek()
+        MonthDaysOfMonth(
+            visibleDates = monthViewModel.visibleDates,
+            onDayClick = { clickedDate ->
+                if (!clickedDate.isCurrentMonth) {
+                    monthViewModel = dataSource.getData(
+                        currentMonth = YearMonth.of(clickedDate.date.year, clickedDate.date.month),
+                        lastSelectedDate = monthViewModel.selectedDate.date
+                    )
+                }
+
+                monthViewModel = monthViewModel.copy(
+                    selectedDate = clickedDate.copy(isSelected = true),
+                    visibleDates = monthViewModel.visibleDates.map { date ->
+                        date.copy(isSelected = date.date.isEqual(clickedDate.date))
+                    }
+                )
+            }
+        )
     }
 }
 
 @Composable
-private fun Header(date: LocalDate) {
+private fun MonthHeader(
+    yearMonth : YearMonth,
+    onPrevClick: (YearMonth) -> Unit = {},
+    onNextClick: (YearMonth) -> Unit = {}
+) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -60,7 +98,10 @@ private fun Header(date: LocalDate) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            onClick = {},
+            onClick = {
+                val prevYearMonth = yearMonth.minusMonths(1)
+                onPrevClick(prevYearMonth)
+            },
             modifier = Modifier
                 .defaultMinSize(
                     minWidth = 0.dp,
@@ -79,13 +120,16 @@ private fun Header(date: LocalDate) {
             )
         }
         Text(
-            text = "${date.year}년 ${date.monthValue}월",
+            text = "${yearMonth.year}년 ${yearMonth.monthValue}월",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
             color = Color.Black
         )
         Button(
-            onClick = {},
+            onClick = {
+                val nextYearMonth = yearMonth.plusMonths(1)
+                onNextClick(nextYearMonth)
+            },
             modifier = Modifier
                 .defaultMinSize(
                     minWidth = 0.dp,
@@ -109,7 +153,7 @@ private fun Header(date: LocalDate) {
 private val array: Array<String> = arrayOf("일", "월", "화", "수", "목", "금", "토")
 
 @Composable
-private fun DayOfWeek() {
+private fun MonthDayOfWeek() {
     Row (
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -127,20 +171,18 @@ private fun DayOfWeek() {
 }
 
 @Composable
-private fun DaysOfMonth() {
-    val days: ArrayList<String> = daysInMonthArray(LocalDate.now())
+private fun MonthDaysOfMonth(
+    visibleDates: List<MonthViewModel.Date>,
+    onDayClick: (MonthViewModel.Date) -> Unit = {}
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(7)
     ) {
-        items(days.size) { index ->
-            val day = days[index]
-            if (day === "")
-                Box {}
-            else
+        items (visibleDates) { date ->
                 CalendarDay(
                     modifier = Modifier.padding(top = 10.dp),
-                    day = day,
-                    isToday = day == LocalDate.now().dayOfMonth.toString(),
+                    date = date,
+                    onDateClick = onDayClick
                 )
         }
     }
@@ -149,44 +191,48 @@ private fun DaysOfMonth() {
 @Composable
 private fun CalendarDay(
     modifier: Modifier = Modifier,
-    day: String,
-    isToday: Boolean
+    date: MonthViewModel.Date,
+    onDateClick: (MonthViewModel.Date) -> Unit = {},
 ) {
     Column(
         modifier = modifier
             .wrapContentSize()
             .size(30.dp)
             .clip(shape = RoundedCornerShape(8.dp))
-            .then(if (isToday) Modifier.background(Color(0xFF735BF2)) else Modifier.background(Color.Transparent))
+            .then(
+                if (date.isSelected)
+                    Modifier.background(Color(0xFF735BF2))
+                else if (date.isToday)
+                    Modifier.border(
+                        width = 1.dp,
+                        color = Color(0xFF735BF2),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                else
+                    Modifier.background(Color.Transparent)
+            )
+            .clickable(
+                enabled = true,
+                onClick = {
+                    onDateClick(date)
+                }
+            )
         ,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
 
     ) {
         Text(
-            text = day,
+            text = date.date.dayOfMonth.toString(),
             textAlign = TextAlign.Center,
             fontSize = 15.sp,
-            color = if (isToday) Color(0xFFFFFFFF) else Color(0xFF222B45),
+            color =
+                    if (date.isSelected)
+                        Color(0xFFFFFFFF)
+                    else if (!date.isCurrentMonth)
+                        Color(0xFF8F9BB3)
+                    else
+                        Color(0xFF222B45),
         )
     }
-}
-
-private fun daysInMonthArray(date: LocalDate): ArrayList<String> {
-    val daysInMonthArray = ArrayList<String>()
-    val yearMonth = YearMonth.from(date)
-
-    val daysInMonth = yearMonth.lengthOfMonth()
-
-    val firstOfMonth: LocalDate = LocalDate.now().withDayOfMonth(1)
-    val firstDayOfWeek = firstOfMonth.dayOfWeek.value
-
-    for (i in 1..42) {
-        if (i <= firstDayOfWeek || i > daysInMonth + firstDayOfWeek) {
-            daysInMonthArray.add("")
-        } else {
-            daysInMonthArray.add((i - firstDayOfWeek).toString())
-        }
-    }
-    return daysInMonthArray
 }

@@ -1,11 +1,11 @@
-import com.codingslaved.diary.ui.screens.calendar.CalendarViewModel
+import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class CalendarDataSource {
+class WeekDataSource {
 
     val today: LocalDate
         get() {
@@ -13,7 +13,7 @@ class CalendarDataSource {
         }
 
 
-    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): CalendarViewModel {
+    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): WeekViewModel {
         val firstDayOfWeek = startDate.with(DayOfWeek.MONDAY)
         val endDayOfWeek = firstDayOfWeek.plusDays(7)
         val visibleDates = getDatesBetween(firstDayOfWeek, endDayOfWeek)
@@ -32,8 +32,8 @@ class CalendarDataSource {
     private fun toViewModel(
         dateList: List<LocalDate>,
         lastSelectedDate: LocalDate
-    ): CalendarViewModel {
-        return CalendarViewModel(
+    ): WeekViewModel {
+        return WeekViewModel(
             selectedDate = toItemViewModel(lastSelectedDate, true),
             visibleDates = dateList.map {
                 toItemViewModel(it, it.isEqual(lastSelectedDate))
@@ -41,7 +41,7 @@ class CalendarDataSource {
         )
     }
 
-    private fun toItemViewModel(date: LocalDate, isSelectedDate: Boolean) = CalendarViewModel.Date(
+    private fun toItemViewModel(date: LocalDate, isSelectedDate: Boolean) = WeekViewModel.Date(
         isSelected = isSelectedDate,
         isToday = date.isEqual(today),
         date = date,

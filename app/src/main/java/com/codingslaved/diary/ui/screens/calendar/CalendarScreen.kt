@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codingslaved.diary.R
-import java.time.LocalDate
 
 enum class Mode {
     MONTH,
@@ -50,8 +49,8 @@ enum class Mode {
 }
 
 object ModeHeight {
-    val Month = 350.dp
-    val Week = 100.dp
+    val Month = 340.dp
+    val Week = 150.dp
 }
 
 fun calculateHeight(mode: Mode): Dp {
@@ -66,7 +65,6 @@ fun calculateHeight(mode: Mode): Dp {
 @Composable
 fun CalendarScreen() {
     var currentMode by remember { mutableStateOf(Mode.MONTH) }
-    val date = LocalDate.now()
 
     Scaffold { innerPadding ->
         Column (
@@ -99,7 +97,7 @@ fun CalendarScreen() {
                         label = "mode",
                     ) { mode ->
                         when (mode) {
-                            Mode.MONTH -> MonthCalendarView(currentDate = date)
+                            Mode.MONTH -> MonthCalendarView()
                             Mode.WEEK -> WeekCalendarView()
                         }
                     }

@@ -5,4 +5,6 @@
     <string name="setting_btn_content_description">settings Button</string>
     <string name="calendar_prev_month_btn_content_description">Previous Month</string>
     <string name="calendar_next_month_btn_content_description">Next Month</string>
+    <string name="calendar_prev_week_btn_content_description">Previous Week</string>
+    <string name="calendar_next_week_btn_content_description">Next Week</string>
 </resources>
