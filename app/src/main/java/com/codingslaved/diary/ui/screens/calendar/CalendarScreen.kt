@@ -3,7 +3,6 @@ package com.codingslaved.diary.ui.screens.calendar
 
 import MonthCalendarView
 import WeekCalendarView
-import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*

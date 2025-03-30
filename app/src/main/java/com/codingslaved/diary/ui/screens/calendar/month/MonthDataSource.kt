@@ -1,4 +1,3 @@
-import android.util.Log
 import com.codingslaved.diary.ui.screens.calendar.month.MonthViewModel
 import java.time.LocalDate
 import java.time.YearMonth
