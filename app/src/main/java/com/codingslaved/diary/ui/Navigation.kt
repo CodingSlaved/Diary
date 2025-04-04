@@ -6,10 +6,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.codingslaved.diary.ui.screens.home.HomeScreen
 import com.codingslaved.diary.ui.screens.calendar.CalendarScreen
+import com.codingslaved.diary.view.WritingScreen
 
 object Routes {
     const val HOME = "home"
     const val CALENDAR = "calendar"
+    const val WRITING = "writing"
 }
 
 @Composable
@@ -24,7 +26,10 @@ fun Navigation() {
             HomeScreen(navController = navController)
         }
         composable(route = Routes.CALENDAR) {
-            CalendarScreen()
+            CalendarScreen(navController = navController)
+        }
+        composable(route = Routes.WRITING) {
+            WritingScreen()
         }
     }
 }
