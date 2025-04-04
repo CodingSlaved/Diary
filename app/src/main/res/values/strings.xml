@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Diary</string>
+    <string name="create_btn_content_description">create schedule</string>
+    <string name="change_calendar_view_btn_content_description">Change Calendar View</string>
+    <string name="setting_btn_content_description">settings Button</string>
+    <string name="calendar_prev_month_btn_content_description">Previous Month</string>
+    <string name="calendar_next_month_btn_content_description">Next Month</string>
+    <string name="calendar_prev_week_btn_content_description">Previous Week</string>
+    <string name="calendar_next_week_btn_content_description">Next Week</string>
 </resources>
