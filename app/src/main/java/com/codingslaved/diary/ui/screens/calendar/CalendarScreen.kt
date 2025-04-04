@@ -40,9 +40,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
+import androidx.navigation.NavController
 import com.codingslaved.diary.R
+import com.codingslaved.diary.ui.Routes
 
 enum class Mode {
     MONTH,
@@ -64,7 +65,7 @@ fun calculateHeight(mode: Mode): Dp {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen() {
+fun CalendarScreen(navController: NavController) {
     var currentMode by remember { mutableStateOf(Mode.MONTH) }
     var rawHeight by remember { mutableStateOf(calculateHeight(currentMode)) } // Dp 단위로 관리
     var isDragging by remember { mutableStateOf(false) }
@@ -146,7 +147,9 @@ fun CalendarScreen() {
                     onDragEnd = { isDragging = false }
                 )
                 ScheduleContent(
+                    navController = navController,
                     modifier = Modifier
+                        .fillMaxSize()
                         .padding(
                             bottom = innerPadding.calculateBottomPadding()
                         )
@@ -192,26 +195,20 @@ private fun Header(mode: Mode = Mode.MONTH, onChangeMode: (Mode) -> Unit = {}) {
 }
 
 @Composable
-private fun ScheduleContent(modifier: Modifier = Modifier) {
-    val scrollState = rememberScrollState()
-    Column (
-        modifier
-            .verticalScroll(scrollState)
-            .fillMaxWidth()
+private fun ScheduleContent(navController: NavController, modifier: Modifier = Modifier) {
+
+    Card (
+        onClick = {navController.navigate(Routes.WRITING)},
+        modifier = modifier
             .padding(
                 top = 10.dp,
                 bottom = 10.dp,
                 start = 12.dp,
                 end = 12.dp
             ),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Card (
-            modifier = Modifier.fillMaxWidth(),
-            border = BorderStroke(1.dp, Color.Green)
-        ) {
-        }
-    }
+
+    ) {}
+
 }
 
 @Composable
@@ -242,8 +239,8 @@ private fun DragHandler(
     }
 }
 
-@Preview
-@Composable
-fun CalendarScreenPreview() {
-    CalendarScreen()
-}
+//@Preview
+//@Composable
+//fun CalendarScreenPreview() {
+//    CalendarScreen()
+//}
