@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
 import com.codingslaved.diary.R
 import com.codingslaved.diary.ui.Routes
+import com.codingslaved.diary.viewmodel.SharedViewModel
+import java.time.LocalDate
 
 enum class Mode {
     MONTH,
@@ -65,7 +67,7 @@ fun calculateHeight(mode: Mode): Dp {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(navController: NavController) {
+fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
     var currentMode by remember { mutableStateOf(Mode.MONTH) }
     var rawHeight by remember { mutableStateOf(calculateHeight(currentMode)) } // Dp 단위로 관리
     var isDragging by remember { mutableStateOf(false) }
@@ -147,7 +149,10 @@ fun CalendarScreen(navController: NavController) {
                     onDragEnd = { isDragging = false }
                 )
                 ScheduleContent(
-                    navController = navController,
+                    onClick = {
+                        viewModel.setData(LocalDate.now().plusMonths(5).plusDays(12))
+                        navController.navigate(Routes.WRITING)
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(
@@ -195,10 +200,10 @@ private fun Header(mode: Mode = Mode.MONTH, onChangeMode: (Mode) -> Unit = {}) {
 }
 
 @Composable
-private fun ScheduleContent(navController: NavController, modifier: Modifier = Modifier) {
+private fun ScheduleContent(onClick: () -> Unit, modifier: Modifier = Modifier) {
 
     Card (
-        onClick = {navController.navigate(Routes.WRITING)},
+        onClick = onClick,
         modifier = modifier
             .padding(
                 top = 10.dp,

@@ -1,8 +1,5 @@
 package com.codingslaved.diary.view
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +28,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,15 +49,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.codingslaved.diary.viewmodel.DiaryDetails
 import com.codingslaved.diary.viewmodel.DiaryEntryViewModel
 import com.codingslaved.diary.viewmodel.DiaryProvider
+import com.codingslaved.diary.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import java.time.LocalDate
 
 @Composable
 fun WritingScreen(
+    selectViewModel: SharedViewModel,
     viewModel: DiaryEntryViewModel = viewModel(factory = DiaryProvider.Factory)
 ) {
+    val date by selectViewModel.data.collectAsState(LocalDate.now())
+
     Scaffold { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Head(Modifier.padding(innerPadding))
+            Text(text = date.toString())
             HorizontalDivider(modifier = Modifier.padding(2.dp), thickness = 2.dp)
             TextField(
                 viewModel,
@@ -173,7 +178,7 @@ fun WritingPagePreview() {
                 .padding(start = 2.dp, top = 5.dp, end = 2.dp, bottom = 5.dp),
             color = MaterialTheme.colorScheme.background
         ) {
-            WritingScreen()
+            WritingScreen(selectViewModel = SharedViewModel())
         }
     }
 }
