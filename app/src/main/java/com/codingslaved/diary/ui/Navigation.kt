@@ -1,12 +1,14 @@
 package com.codingslaved.diary.ui
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.codingslaved.diary.ui.screens.home.HomeScreen
 import com.codingslaved.diary.ui.screens.calendar.CalendarScreen
 import com.codingslaved.diary.view.WritingScreen
+import com.codingslaved.diary.viewmodel.SharedViewModel
 
 object Routes {
     const val HOME = "home"
@@ -17,6 +19,7 @@ object Routes {
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
+    val viewModel: SharedViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -26,10 +29,10 @@ fun Navigation() {
             HomeScreen(navController = navController)
         }
         composable(route = Routes.CALENDAR) {
-            CalendarScreen(navController = navController)
+            CalendarScreen(navController = navController, viewModel = viewModel)
         }
         composable(route = Routes.WRITING) {
-            WritingScreen()
+            WritingScreen(selectViewModel = viewModel)
         }
     }
 }
