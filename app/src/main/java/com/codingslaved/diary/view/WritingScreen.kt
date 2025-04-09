@@ -1,5 +1,6 @@
 package com.codingslaved.diary.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.codingslaved.diary.ui.theme.DiaryTheme
 import com.codingslaved.diary.viewmodel.DiaryUiState
-import java.util.Calendar
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.codingslaved.diary.viewmodel.DiaryDetails
 import com.codingslaved.diary.viewmodel.DiaryEntryViewModel
@@ -52,7 +52,10 @@ import com.codingslaved.diary.viewmodel.DiaryProvider
 import com.codingslaved.diary.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import java.time.LocalDate
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Composable
 fun WritingScreen(
@@ -60,11 +63,28 @@ fun WritingScreen(
     viewModel: DiaryEntryViewModel = viewModel(factory = DiaryProvider.Factory)
 ) {
     val date by selectViewModel.data.collectAsState(LocalDate.now())
+    var isFirst by remember { mutableStateOf(true) }
+
+    if (date != null) {
+        val diary = viewModel.getDiaryByDate(date.toString()).collectAsState(initial = null)
+        diary.value?.let {
+            if (isFirst) {
+                viewModel.updateUiState(
+                    viewModel.diaryUiState.diaryDetails.copy(
+                        id = it.id,
+                        text = it.text,
+                        date = it.date
+                    )
+                )
+            }
+
+            isFirst = false
+        }
+    }
 
     Scaffold { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            Head(Modifier.padding(innerPadding))
-            Text(text = date.toString())
+            Head(viewModel, date, Modifier.padding(innerPadding))
             HorizontalDivider(modifier = Modifier.padding(2.dp), thickness = 2.dp)
             TextField(
                 viewModel,
@@ -78,12 +98,19 @@ fun WritingScreen(
 }
 
 @Composable
-fun Head(modifier: Modifier = Modifier) {
+fun Head(viewModel: DiaryEntryViewModel, date: LocalDate?, modifier: Modifier = Modifier) {
     val selectedIcon = remember { mutableStateOf(Icons.Default.Face) }
     val showDialog = remember { mutableStateOf(false) }
-    val date = Calendar.getInstance()
-    val today =
-        "${date.get(Calendar.YEAR)}년 ${date.get(Calendar.MONTH) + 1}월 ${date.get(Calendar.DATE)}일"
+    val diaryUiState: DiaryUiState = viewModel.diaryUiState
+
+    val today = if (date == null) {
+        val now = LocalDate.now()
+        viewModel.updateUiState(diaryUiState.diaryDetails.copy(date = now.toString()))
+        "${now.year}년 ${now.monthValue}월 ${now.dayOfMonth}일"
+    } else {
+        viewModel.updateUiState(diaryUiState.diaryDetails.copy(date = date.toString()))
+        "${date.year}년 ${date.monthValue}월 ${date.dayOfMonth}일"
+    }
 
     Row(
         modifier = Modifier
@@ -134,6 +161,7 @@ fun IconPicker(showDialog: MutableState<Boolean>, selectedIcon: MutableState<Ima
     }
 }
 
+@OptIn(ExperimentalUuidApi::class)
 @Composable
 fun TextField(
     viewModel: DiaryEntryViewModel,
@@ -153,7 +181,14 @@ fun TextField(
             .onFocusChanged {
                 if (!it.hasFocus) {
                     coroutineScope.launch {
-                        viewModel.saveDiary()
+                        Log.d("ui", diaryUiState.diaryDetails.toString())
+                        if (diaryUiState.diaryDetails.id == "") {
+                            onValueChange(diaryUiState.diaryDetails.copy(id = Uuid.random().toString()))
+                            viewModel.saveDiary()
+                        } else {
+                            viewModel.updateDiary()
+                        }
+
                     }
                 }
 

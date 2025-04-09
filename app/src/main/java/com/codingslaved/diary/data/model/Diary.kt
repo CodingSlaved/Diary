@@ -8,4 +8,5 @@ import androidx.room.PrimaryKey
 data class Diary(
     @PrimaryKey val id: String,
     @ColumnInfo(name = "text", typeAffinity = ColumnInfo.TEXT) val text: String,
+    @ColumnInfo(name = "date", typeAffinity = ColumnInfo.TEXT) val date: String,
 )

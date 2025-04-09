@@ -23,7 +23,7 @@ abstract class DiaryDatabase : RoomDatabase() {
                     context.applicationContext,
                     DiaryDatabase::class.java,
                     "diary_database"
-                ).build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
             }
         }
     }
