@@ -1,6 +1,5 @@
 package com.codingslaved.diary.view
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -181,8 +180,7 @@ fun TextField(
             .onFocusChanged {
                 if (!it.hasFocus) {
                     coroutineScope.launch {
-                        Log.d("ui", diaryUiState.diaryDetails.toString())
-                        if (diaryUiState.diaryDetails.id == "") {
+                        if (diaryUiState.diaryDetails.id.isBlank() && diaryUiState.diaryDetails.text.isNotBlank()) {
                             onValueChange(diaryUiState.diaryDetails.copy(id = Uuid.random().toString()))
                             viewModel.saveDiary()
                         } else {
