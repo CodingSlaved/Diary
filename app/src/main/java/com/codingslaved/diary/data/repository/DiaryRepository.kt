@@ -4,6 +4,8 @@ import com.codingslaved.diary.data.model.Diary
 import kotlinx.coroutines.flow.Flow
 
 interface DiaryRepository {
-    fun getAll(): Flow<List<Diary>>
+    fun getDiary(date: String): Flow<Diary>
     suspend fun insert(diary: Diary)
+    suspend fun update(diary: Diary)
+
 }
