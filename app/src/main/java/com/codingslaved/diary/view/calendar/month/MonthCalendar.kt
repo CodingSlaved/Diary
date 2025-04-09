@@ -38,14 +38,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codingslaved.diary.R
-import com.codingslaved.diary.ui.screens.calendar.ModeHeight
-import com.codingslaved.diary.ui.screens.calendar.month.MonthViewModel
+import com.codingslaved.diary.view.calendar.ModeHeight
+import com.codingslaved.diary.view.calendar.month.MonthViewModel
+import java.time.LocalDate
 import java.time.YearMonth
 
 @Composable
-fun MonthCalendarView() {
-    val dataSource = MonthDataSource()
-    var monthViewModel by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
+fun MonthCalendarView(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    val dataSource = remember { MonthDataSource() }
+    var monthViewModel by remember(selectedDate) {
+        mutableStateOf(dataSource.getData(YearMonth.from(selectedDate), selectedDate))
+    }
 
     Column (
         modifier = Modifier
@@ -54,11 +60,11 @@ fun MonthCalendarView() {
     ) {
         MonthHeader(
             yearMonth = monthViewModel.currentMonth,
-            onPrevClick = { yearMonth ->
-                monthViewModel = dataSource.getData(currentMonth = yearMonth, monthViewModel.selectedDate.date)
+            onPrevClick = {
+                monthViewModel = dataSource.getData(monthViewModel.currentMonth.minusMonths(1), selectedDate)
             },
-            onNextClick = { yearMonth ->
-                monthViewModel = dataSource.getData(currentMonth = yearMonth, monthViewModel.selectedDate.date)
+            onNextClick = {
+                monthViewModel = dataSource.getData(monthViewModel.currentMonth.plusMonths(1), selectedDate)
             }
         )
         Spacer (modifier = Modifier.size(8.dp))
@@ -66,19 +72,10 @@ fun MonthCalendarView() {
         MonthDaysOfMonth(
             visibleDates = monthViewModel.visibleDates,
             onDayClick = { clickedDate ->
+                onDateSelected(clickedDate.date)
                 if (!clickedDate.isCurrentMonth) {
-                    monthViewModel = dataSource.getData(
-                        currentMonth = YearMonth.of(clickedDate.date.year, clickedDate.date.month),
-                        lastSelectedDate = monthViewModel.selectedDate.date
-                    )
+                    monthViewModel = dataSource.getData(YearMonth.from(clickedDate.date), clickedDate.date)
                 }
-
-                monthViewModel = monthViewModel.copy(
-                    selectedDate = clickedDate.copy(isSelected = true),
-                    visibleDates = monthViewModel.visibleDates.map { date ->
-                        date.copy(isSelected = date.date.isEqual(clickedDate.date))
-                    }
-                )
             }
         )
     }

@@ -5,8 +5,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.codingslaved.diary.ui.screens.home.HomeScreen
-import com.codingslaved.diary.ui.screens.calendar.CalendarScreen
+import com.codingslaved.diary.view.HomeScreen
+import com.codingslaved.diary.view.calendar.CalendarScreen
 import com.codingslaved.diary.view.WritingScreen
 import com.codingslaved.diary.viewmodel.SharedViewModel
 

@@ -1,17 +1,12 @@
-package com.codingslaved.diary.ui.screens.calendar.week
+package com.codingslaved.diary.view.calendar.week
 
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
 data class WeekViewModel(
-    val selectedDate: Date,
     val visibleDates: List<Date>
 ) {
-
-    val startDate: Date = visibleDates.first()
-    val endDate: Date = visibleDates.last()
-
     data class Date(
         val date: LocalDate,
         val isSelected: Boolean,

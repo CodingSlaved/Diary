@@ -61,7 +61,7 @@ fun WritingScreen(
     selectViewModel: SharedViewModel,
     viewModel: DiaryEntryViewModel = viewModel(factory = DiaryProvider.Factory)
 ) {
-    val date by selectViewModel.data.collectAsState(LocalDate.now())
+    val date by selectViewModel.data.collectAsState(null)
     var isFirst by remember { mutableStateOf(true) }
 
     if (date != null) {

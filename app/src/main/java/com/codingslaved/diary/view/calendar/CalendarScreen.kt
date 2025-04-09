@@ -1,4 +1,4 @@
-package com.codingslaved.diary.ui.screens.calendar
+package com.codingslaved.diary.view.calendar
 
 
 import MonthCalendarView
@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,9 +42,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.codingslaved.diary.R
 import com.codingslaved.diary.ui.Routes
+import com.codingslaved.diary.viewmodel.DiaryEntryViewModel
+import com.codingslaved.diary.viewmodel.DiaryProvider
 import com.codingslaved.diary.viewmodel.SharedViewModel
 import java.time.LocalDate
 
@@ -71,6 +75,7 @@ fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
     var currentMode by remember { mutableStateOf(Mode.MONTH) }
     var rawHeight by remember { mutableStateOf(calculateHeight(currentMode)) } // Dp 단위로 관리
     var isDragging by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val density = LocalDensity.current
 
     val targetHeight by remember(rawHeight, isDragging) {
@@ -116,8 +121,18 @@ fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
                         label = "mode",
                     ) { mode ->
                         when (mode) {
-                            Mode.MONTH -> MonthCalendarView()
-                            Mode.WEEK -> WeekCalendarView()
+                            Mode.MONTH -> MonthCalendarView(
+                                selectedDate,
+                                onDateSelected = {
+                                    selectedDate = it
+                                }
+                            )
+                            Mode.WEEK -> WeekCalendarView(
+                                selectedDate,
+                                onDateSelected = {
+                                    selectedDate = it
+                                }
+                            )
                         }
                     }
                 }
@@ -149,8 +164,9 @@ fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
                     onDragEnd = { isDragging = false }
                 )
                 ScheduleContent(
+                    selectedDate,
                     onClick = {
-                        viewModel.setData(LocalDate.now().plusMonths(5).plusDays(12))
+                        viewModel.setData(selectedDate)
                         navController.navigate(Routes.WRITING)
                     },
                     modifier = Modifier
@@ -200,7 +216,17 @@ private fun Header(mode: Mode = Mode.MONTH, onChangeMode: (Mode) -> Unit = {}) {
 }
 
 @Composable
-private fun ScheduleContent(onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ScheduleContent(
+    selectedDate: LocalDate,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val diaryEntryViewModel: DiaryEntryViewModel = viewModel(factory = DiaryProvider.Factory)
+    val diaryEntry by diaryEntryViewModel.getDiaryByDate(selectedDate.toString()).collectAsState(initial = null)
+
+    LaunchedEffect(selectedDate) {
+        diaryEntryViewModel.getDiaryByDate(selectedDate.toString())
+    }
 
     Card (
         onClick = onClick,
@@ -212,7 +238,18 @@ private fun ScheduleContent(onClick: () -> Unit, modifier: Modifier = Modifier) 
                 end = 12.dp
             ),
 
-    ) {}
+    ) {
+        when {
+            diaryEntry == null -> Text(
+                text = "다이어리를 작성해보세요.",
+                modifier = Modifier.padding(16.dp)
+            )
+            else -> Text(
+                text = diaryEntry?.text ?: selectedDate.toString(),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
 
 }
 
