@@ -5,13 +5,8 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 data class WeekViewModel(
-    val selectedDate: Date,
     val visibleDates: List<Date>
 ) {
-
-    val startDate: Date = visibleDates.first()
-    val endDate: Date = visibleDates.last()
-
     data class Date(
         val date: LocalDate,
         val isSelected: Boolean,

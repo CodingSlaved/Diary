@@ -1,3 +1,4 @@
+import android.util.Log
 import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -6,44 +7,22 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 class WeekDataSource {
-
     val today: LocalDate
         get() {
             return LocalDate.now()
         }
 
-
-    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): WeekViewModel {
+    fun getViewModel(startDate: LocalDate, selectedDate: LocalDate): WeekViewModel {
         val firstDayOfWeek = startDate.with(DayOfWeek.MONDAY)
-        val endDayOfWeek = firstDayOfWeek.plusDays(7)
-        val visibleDates = getDatesBetween(firstDayOfWeek, endDayOfWeek)
-        return toViewModel(visibleDates, lastSelectedDate)
-    }
-
-    private fun getDatesBetween(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
-        val numOfDays = ChronoUnit.DAYS.between(startDate, endDate)
-        return Stream.iterate(startDate) { date ->
-            date.plusDays(1)
-        }
-            .limit(numOfDays)
-            .collect(Collectors.toList())
-    }
-
-    private fun toViewModel(
-        dateList: List<LocalDate>,
-        lastSelectedDate: LocalDate
-    ): WeekViewModel {
+        val dates = (0..6).map { firstDayOfWeek.plusDays(it.toLong()) }
         return WeekViewModel(
-            selectedDate = toItemViewModel(lastSelectedDate, true),
-            visibleDates = dateList.map {
-                toItemViewModel(it, it.isEqual(lastSelectedDate))
-            },
+            visibleDates = dates.map {
+                WeekViewModel.Date(
+                    date = it,
+                    isSelected = it == selectedDate,
+                    isToday = it == today
+                )
+            }
         )
     }
-
-    private fun toItemViewModel(date: LocalDate, isSelectedDate: Boolean) = WeekViewModel.Date(
-        isSelected = isSelectedDate,
-        isToday = date.isEqual(today),
-        date = date,
-    )
 }

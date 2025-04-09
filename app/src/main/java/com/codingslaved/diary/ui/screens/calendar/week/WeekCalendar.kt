@@ -34,12 +34,18 @@ import androidx.compose.ui.unit.sp
 import com.codingslaved.diary.R
 import com.codingslaved.diary.ui.screens.calendar.ModeHeight
 import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel
+import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel.Date
 import java.time.LocalDate
 
 @Composable
-fun WeekCalendarView() {
-    val dataSource = WeekDataSource()
-    var weekViewModel by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
+fun WeekCalendarView(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    val dataSource = remember { WeekDataSource() }
+    var weekViewModel by remember(selectedDate) {
+        mutableStateOf(dataSource.getViewModel(selectedDate, selectedDate))
+    }
 
     Column(
         modifier = Modifier
@@ -48,46 +54,42 @@ fun WeekCalendarView() {
             .padding(horizontal = 12.dp),
     ) {
         WeekHeader(
-            data = weekViewModel,
-            onPrevClick = { startDate ->
-                val finalStartDate = startDate.minusDays(1)
-                weekViewModel = dataSource.getData(startDate = finalStartDate, lastSelectedDate = weekViewModel.selectedDate.date)
+            selectedDate = selectedDate,
+            onPrevClick = {
+                val newStart = weekViewModel.visibleDates.first().date.minusWeeks(1)
+                weekViewModel = dataSource.getViewModel(newStart, selectedDate)
             },
-            onNextClick = { endDate ->
-                val finalStartDate = endDate.plusDays(2)
-                weekViewModel = dataSource.getData(startDate = finalStartDate, lastSelectedDate = weekViewModel.selectedDate.date)
+            onNextClick = {
+                val newStart = weekViewModel.visibleDates.last().date.plusDays(1)
+                weekViewModel = dataSource.getViewModel(newStart, selectedDate)
             }
         )
         Spacer(modifier = Modifier.size(8.dp))
         WeekContent(
             modifier = Modifier.weight(1f),
-            data = weekViewModel,
+            visibleDates = weekViewModel.visibleDates,
             onDateClick = { date ->
+                onDateSelected(date.date)
+                // Update weekViewModel to reflect the new selection
                 weekViewModel = weekViewModel.copy(
-                selectedDate = date,
-                visibleDates = weekViewModel.visibleDates.map {
-                    it.copy(
-                        isSelected = it.date.isEqual(date.date)
-                    )
-                }
-            )
-        })
+                    visibleDates = weekViewModel.visibleDates.map {
+                        it.copy(isSelected = it.date == date.date)
+                    }
+                )
+            }
+        )
     }
 }
 
 @Composable
 private fun WeekHeader(
-    data: WeekViewModel,
-    onPrevClick: (LocalDate) -> Unit,
-    onNextClick: (LocalDate) -> Unit,
+    selectedDate: LocalDate,
+    onPrevClick: () -> Unit,
+    onNextClick: () -> Unit,
 ) {
     Row {
         Text(
-            text = if (data.selectedDate.isToday) {
-                "오늘"
-            } else {
-                "${data.selectedDate.date.year}년 ${data.selectedDate.date.monthValue}월 ${data.selectedDate.date.dayOfMonth}일"
-            },
+            text = "${selectedDate.year}년 ${selectedDate.monthValue}월 ${selectedDate.dayOfMonth}일",
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically),
@@ -95,9 +97,7 @@ private fun WeekHeader(
             fontSize = 18.sp,
         )
         Button(
-            onClick = {
-                onPrevClick(data.startDate.date)
-            },
+            onClick = onPrevClick,
             modifier = Modifier
                 .defaultMinSize(
                     minWidth = 0.dp,
@@ -117,9 +117,7 @@ private fun WeekHeader(
         }
         Spacer(modifier = Modifier.size(8.dp))
         Button(
-            onClick = {
-                onNextClick(data.endDate.date)
-            },
+            onClick = onNextClick,
             modifier = Modifier
                 .defaultMinSize(
                     minWidth = 0.dp,
@@ -143,14 +141,14 @@ private fun WeekHeader(
 @Composable
 private fun WeekContent(
     modifier: Modifier = Modifier,
-    data: WeekViewModel,
+    visibleDates: List<Date>,
     onDateClick: (WeekViewModel.Date) -> Unit,
 ) {
     LazyRow (
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items (items = data.visibleDates) { date ->
+        items (items = visibleDates) { date ->
             WeekContentItem(
                 date = date,
                 onDateClick
@@ -176,11 +174,14 @@ private fun WeekContentItem(
                 shape = RoundedCornerShape(8.dp),
                 color = if (date.isSelected)
                     Color(0xFF735BF2)
+                    else if (date.isToday) Color(0xFFEBE2F8)
                     else Color(0xFFCDC7EE),
             ),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor =  if (date.isSelected)
+                Color(0xFFEBE2F8)
+            else if (date.isToday)
                 Color(0xFFEBE2F8)
             else
                 Color.Transparent
@@ -193,7 +194,9 @@ private fun WeekContentItem(
             Text(
                 text = date.day,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = if (date.isSelected) Color(0xFF9281EA) else Color(0xFFABABAB),
+                color = if (date.isSelected) Color(0xFF9281EA)
+                else if (date.isToday) Color(0xFF9F93E0)
+                else Color(0xFFABABAB),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Light,
             )
@@ -201,7 +204,9 @@ private fun WeekContentItem(
             Text(
                 text = date.date.dayOfMonth.toString(),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = if (date.isSelected) Color(0xFF735BF2) else Color(0xFF797979),
+                color = if (date.isSelected) Color(0xFF735BF2)
+                else if (date.isToday) Color(0xFF8F7DF1)
+                else Color(0xFF797979),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
             )

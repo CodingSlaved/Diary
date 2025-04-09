@@ -8,13 +8,12 @@ import java.time.YearMonth
 
 data class MonthViewModel(
     val currentMonth: YearMonth,
-    val selectedDate: Date,
     val visibleDates: List<Date>
 ) {
     data class Date(
         val date: LocalDate,
-        val isSelected: Boolean,
         val isCurrentMonth: Boolean,
+        val isSelected: Boolean,
         val isToday: Boolean
     ) {
 //        val day: String = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
