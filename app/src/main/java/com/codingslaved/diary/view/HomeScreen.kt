@@ -1,4 +1,4 @@
-package com.codingslaved.diary.ui.screens.home
+package com.codingslaved.diary.view
 
 
 import androidx.compose.foundation.layout.Column

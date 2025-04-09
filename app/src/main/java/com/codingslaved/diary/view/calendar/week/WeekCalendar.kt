@@ -32,9 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codingslaved.diary.R
-import com.codingslaved.diary.ui.screens.calendar.ModeHeight
-import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel
-import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel.Date
+import com.codingslaved.diary.view.calendar.ModeHeight
+import com.codingslaved.diary.view.calendar.week.WeekViewModel.Date
 import java.time.LocalDate
 
 @Composable
@@ -142,7 +141,7 @@ private fun WeekHeader(
 private fun WeekContent(
     modifier: Modifier = Modifier,
     visibleDates: List<Date>,
-    onDateClick: (WeekViewModel.Date) -> Unit,
+    onDateClick: (Date) -> Unit,
 ) {
     LazyRow (
         modifier = modifier,
@@ -159,8 +158,8 @@ private fun WeekContent(
 
 @Composable
 private fun WeekContentItem(
-    date: WeekViewModel.Date,
-    onClick: (WeekViewModel.Date) -> Unit,
+    date: Date,
+    onClick: (Date) -> Unit,
 ) {
     Button(
         onClick = {

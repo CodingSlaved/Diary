@@ -1,6 +1,4 @@
-import com.codingslaved.diary.ui.screens.calendar.month.MonthViewModel
-import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel
-import java.time.DayOfWeek
+import com.codingslaved.diary.view.calendar.month.MonthViewModel
 import java.time.LocalDate
 import java.time.YearMonth
 

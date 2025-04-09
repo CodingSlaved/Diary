@@ -1,10 +1,6 @@
-import android.util.Log
-import com.codingslaved.diary.ui.screens.calendar.week.WeekViewModel
+import com.codingslaved.diary.view.calendar.week.WeekViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
 class WeekDataSource {
     val today: LocalDate

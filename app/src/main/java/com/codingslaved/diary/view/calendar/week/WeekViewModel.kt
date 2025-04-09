@@ -1,4 +1,4 @@
-package com.codingslaved.diary.ui.screens.calendar.week
+package com.codingslaved.diary.view.calendar.week
 
 import java.time.LocalDate
 import java.time.format.TextStyle

@@ -1,4 +1,4 @@
-package com.codingslaved.diary.ui.screens.calendar
+package com.codingslaved.diary.view.calendar
 
 
 import MonthCalendarView

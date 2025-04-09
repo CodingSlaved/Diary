@@ -1,4 +1,4 @@
-package com.codingslaved.diary.ui.screens.calendar.month
+package com.codingslaved.diary.view.calendar.month
 
 import java.time.LocalDate
 import java.time.YearMonth
