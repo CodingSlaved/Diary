@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.codingslaved.diary.data.model.Diary
 import com.codingslaved.diary.data.repository.DiaryRepository
+import java.time.LocalDate
 
 class DiaryEntryViewModel(private val diaryRepository: DiaryRepository) : ViewModel() {
     var diaryUiState by mutableStateOf(DiaryUiState())
@@ -18,11 +19,11 @@ class DiaryEntryViewModel(private val diaryRepository: DiaryRepository) : ViewMo
 
     private fun validateInput(uiState: DiaryDetails = diaryUiState.diaryDetails): Boolean {
         return with(uiState) {
-            id.isNotBlank() && text.isNotBlank() && date.isNotBlank()
+            id.isNotBlank() && text.isNotBlank()
         }
     }
 
-    fun getDiaryByDate(date: String) = diaryRepository.getDiary(date)
+    fun getDiaryByDate(date: LocalDate) = diaryRepository.getDiary(date)
 
     suspend fun saveDiary() {
         if (validateInput()) {
@@ -45,7 +46,7 @@ data class DiaryUiState(
 data class DiaryDetails(
     val id: String = "",
     val text: String = "",
-    val date: String = "",
+    val date: LocalDate = LocalDate.now(),
 )
 
 fun DiaryDetails.toItem(): Diary = Diary(

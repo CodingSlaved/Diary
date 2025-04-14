@@ -65,7 +65,7 @@ fun WritingScreen(
     var isFirst by remember { mutableStateOf(true) }
 
     if (date != null) {
-        val diary = viewModel.getDiaryByDate(date.toString()).collectAsState(initial = null)
+        val diary = viewModel.getDiaryByDate(date!!).collectAsState(initial = null)
         diary.value?.let {
             if (isFirst) {
                 viewModel.updateUiState(
@@ -104,10 +104,10 @@ fun Head(viewModel: DiaryEntryViewModel, date: LocalDate?, modifier: Modifier = 
 
     val today = if (date == null) {
         val now = LocalDate.now()
-        viewModel.updateUiState(diaryUiState.diaryDetails.copy(date = now.toString()))
+        viewModel.updateUiState(diaryUiState.diaryDetails.copy(date = now))
         "${now.year}년 ${now.monthValue}월 ${now.dayOfMonth}일"
     } else {
-        viewModel.updateUiState(diaryUiState.diaryDetails.copy(date = date.toString()))
+        viewModel.updateUiState(diaryUiState.diaryDetails.copy(date = date))
         "${date.year}년 ${date.monthValue}월 ${date.dayOfMonth}일"
     }
 

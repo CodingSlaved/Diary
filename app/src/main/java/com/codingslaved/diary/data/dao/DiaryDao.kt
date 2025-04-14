@@ -6,11 +6,12 @@ import androidx.room.Query
 import androidx.room.Update
 import com.codingslaved.diary.data.model.Diary
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface DiaryDao {
-    @Query("SELECT * FROM diary WHERE date LIKE :date")
-    fun getDiary(date: String): Flow<Diary>
+    @Query("SELECT * FROM diary WHERE date = :date")
+    fun getDiary(date: LocalDate): Flow<Diary>
 
     @Insert
     suspend fun insert(diary: Diary)

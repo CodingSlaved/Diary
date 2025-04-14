@@ -222,10 +222,10 @@ private fun ScheduleContent(
     modifier: Modifier = Modifier
 ) {
     val diaryEntryViewModel: DiaryEntryViewModel = viewModel(factory = DiaryProvider.Factory)
-    val diaryEntry by diaryEntryViewModel.getDiaryByDate(selectedDate.toString()).collectAsState(initial = null)
+    val diaryEntry by diaryEntryViewModel.getDiaryByDate(selectedDate).collectAsState(initial = null)
 
     LaunchedEffect(selectedDate) {
-        diaryEntryViewModel.getDiaryByDate(selectedDate.toString())
+        diaryEntryViewModel.getDiaryByDate(selectedDate)
     }
 
     Card (
