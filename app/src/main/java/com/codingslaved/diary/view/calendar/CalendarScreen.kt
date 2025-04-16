@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,10 +73,10 @@ fun calculateHeight(mode: Mode): Dp {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
-    var currentMode by remember { mutableStateOf(Mode.MONTH) }
+    var currentMode by rememberSaveable { mutableStateOf(Mode.MONTH) }
     var rawHeight by remember { mutableStateOf(calculateHeight(currentMode)) } // Dp 단위로 관리
     var isDragging by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     val density = LocalDensity.current
 
     val targetHeight by remember(rawHeight, isDragging) {
