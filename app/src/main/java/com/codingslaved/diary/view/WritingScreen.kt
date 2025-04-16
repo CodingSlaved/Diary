@@ -58,27 +58,25 @@ import kotlin.uuid.Uuid
 
 @Composable
 fun WritingScreen(
-    selectViewModel: SharedViewModel,
+    date: LocalDate,
+    onBack: () -> Unit,
     viewModel: DiaryEntryViewModel = viewModel(factory = DiaryProvider.Factory)
 ) {
-    val date by selectViewModel.data.collectAsState(null)
     var isFirst by remember { mutableStateOf(true) }
 
-    if (date != null) {
-        val diary = viewModel.getDiaryByDate(date!!).collectAsState(initial = null)
-        diary.value?.let {
-            if (isFirst) {
-                viewModel.updateUiState(
-                    viewModel.diaryUiState.diaryDetails.copy(
-                        id = it.id,
-                        text = it.text,
-                        date = it.date
-                    )
+    val diary = viewModel.getDiaryByDate(date).collectAsState(initial = null)
+    diary.value?.let {
+        if (isFirst) {
+            viewModel.updateUiState(
+                viewModel.diaryUiState.diaryDetails.copy(
+                    id = it.id,
+                    text = it.text,
+                    date = it.date
                 )
-            }
-
-            isFirst = false
+            )
         }
+
+        isFirst = false
     }
 
     Scaffold { innerPadding ->
@@ -211,7 +209,7 @@ fun WritingPagePreview() {
                 .padding(start = 2.dp, top = 5.dp, end = 2.dp, bottom = 5.dp),
             color = MaterialTheme.colorScheme.background
         ) {
-            WritingScreen(selectViewModel = SharedViewModel())
+            WritingScreen(date = LocalDate.now(), onBack = {})
         }
     }
 }

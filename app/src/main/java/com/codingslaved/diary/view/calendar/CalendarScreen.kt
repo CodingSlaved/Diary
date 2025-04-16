@@ -43,12 +43,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.codingslaved.diary.R
-import com.codingslaved.diary.ui.Routes
 import com.codingslaved.diary.viewmodel.DiaryEntryViewModel
 import com.codingslaved.diary.viewmodel.DiaryProvider
-import com.codingslaved.diary.viewmodel.SharedViewModel
 import java.time.LocalDate
 
 enum class Mode {
@@ -71,7 +68,7 @@ fun calculateHeight(mode: Mode): Dp {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
+fun CalendarScreen(onAddEditDiary: (date: String) -> Unit) {
     var currentMode by remember { mutableStateOf(Mode.MONTH) }
     var rawHeight by remember { mutableStateOf(calculateHeight(currentMode)) } // Dp 단위로 관리
     var isDragging by remember { mutableStateOf(false) }
@@ -166,8 +163,7 @@ fun CalendarScreen(navController: NavController, viewModel: SharedViewModel) {
                 ScheduleContent(
                     selectedDate,
                     onClick = {
-                        viewModel.setData(selectedDate)
-                        navController.navigate(Routes.WRITING)
+                        onAddEditDiary(selectedDate.toString())
                     },
                     modifier = Modifier
                         .fillMaxSize()
