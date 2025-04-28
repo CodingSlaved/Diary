@@ -25,10 +25,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.codingslaved.diary.R
 import com.codingslaved.diary.view.calendar.ModeHeight
 import com.codingslaved.diary.view.calendar.month.MonthViewModel
@@ -46,11 +46,13 @@ import java.time.YearMonth
 @Composable
 fun MonthCalendarView(
     selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
+    onDateSelected: (LocalDate) -> Unit,
+    viewModel: MonthViewModel = viewModel<MonthViewModel>(),
 ) {
-    val dataSource = remember { MonthDataSource() }
-    var monthViewModel by remember(selectedDate) {
-        mutableStateOf(dataSource.getData(YearMonth.from(selectedDate), selectedDate))
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(selectedDate) {
+        viewModel.updateSelectedDate(selectedDate)
     }
 
     Column (
@@ -59,23 +61,22 @@ fun MonthCalendarView(
         verticalArrangement = Arrangement.Top
     ) {
         MonthHeader(
-            yearMonth = monthViewModel.currentMonth,
+            yearMonth = uiState.currentMonth,
             onPrevClick = {
-                monthViewModel = dataSource.getData(monthViewModel.currentMonth.minusMonths(1), selectedDate)
+                val newStart = uiState.currentMonth.minusMonths(1)
+                viewModel.updateCurrentMonth(newStart)
             },
             onNextClick = {
-                monthViewModel = dataSource.getData(monthViewModel.currentMonth.plusMonths(1), selectedDate)
+                val newStart = uiState.currentMonth.plusMonths(1)
+                viewModel.updateCurrentMonth(newStart)
             }
         )
         Spacer (modifier = Modifier.size(8.dp))
         MonthDayOfWeek()
         MonthDaysOfMonth(
-            visibleDates = monthViewModel.visibleDates,
-            onDayClick = { clickedDate ->
-                onDateSelected(clickedDate.date)
-                if (!clickedDate.isCurrentMonth) {
-                    monthViewModel = dataSource.getData(YearMonth.from(clickedDate.date), clickedDate.date)
-                }
+            visibleDates = uiState.visibleDates,
+            onDayClick = {
+                onDateSelected(it.date)
             }
         )
     }
