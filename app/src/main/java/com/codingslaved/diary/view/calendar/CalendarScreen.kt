@@ -3,6 +3,7 @@ package com.codingslaved.diary.view.calendar
 
 import MonthCalendarView
 import WeekCalendarView
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
@@ -32,14 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -48,44 +45,13 @@ import com.codingslaved.diary.viewmodel.DiaryEntryViewModel
 import com.codingslaved.diary.viewmodel.DiaryProvider
 import java.time.LocalDate
 
-enum class Mode {
-    MONTH,
-    WEEK
-}
-
-object ModeHeight {
-    val Month = 340.dp
-    val Week = 150.dp
-}
-
-fun calculateHeight(mode: Mode): Dp {
-    return when (mode) {
-        Mode.MONTH -> ModeHeight.Month
-        Mode.WEEK -> ModeHeight.Week
-    }
-}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(onAddEditDiary: (date: String) -> Unit) {
-    var currentMode by remember { mutableStateOf(Mode.MONTH) }
-    var rawHeight by remember { mutableStateOf(calculateHeight(currentMode)) } // Dp 단위로 관리
-    var isDragging by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    val density = LocalDensity.current
-
-    val targetHeight by remember(rawHeight, isDragging) {
-        mutableStateOf(
-            if (isDragging) rawHeight
-            else if (rawHeight <= (ModeHeight.Month + ModeHeight.Week) / 2) ModeHeight.Week
-            else ModeHeight.Month
-        )
-    }
-
-    LaunchedEffect(targetHeight) {
-        currentMode = if (targetHeight == ModeHeight.Week) Mode.WEEK else Mode.MONTH
-    }
+fun CalendarScreen(
+    onAddEditDiary: (date: String) -> Unit,
+    viewModel: CalendarViewModel = viewModel<CalendarViewModel>(),
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold { innerPadding ->
         Column (
@@ -103,34 +69,26 @@ fun CalendarScreen(onAddEditDiary: (date: String) -> Unit) {
                     .wrapContentHeight()
             ) {
                 Header(
-                    mode = currentMode,
-                    onChangeMode = { mode ->
-                        rawHeight = calculateHeight(mode)
-                    }
+                    calendarMode = uiState.currentMode,
+                    onChangeMode = { viewModel.toggleMode() }
                 )
-                Box(
-                    modifier = Modifier
-                        .animateContentSize()
-                        .height(targetHeight)
-                ) {
-                    Crossfade(
-                        targetState = currentMode,
-                        label = "mode",
-                    ) { mode ->
-                        when (mode) {
-                            Mode.MONTH -> MonthCalendarView(
-                                selectedDate,
-                                onDateSelected = {
-                                    selectedDate = it
-                                }
-                            )
-                            Mode.WEEK -> WeekCalendarView(
-                                selectedDate,
-                                onDateSelected = {
-                                    selectedDate = it
-                                }
-                            )
-                        }
+                Crossfade(
+                    targetState = uiState.currentMode,
+                    label = "mode",
+                ) { mode ->
+                    when (mode) {
+                        Mode.MONTH -> MonthCalendarView(
+                            uiState.selectDate,
+                            onDateSelected = { date ->
+                                viewModel.setSelectDate(date)
+                            }
+                        )
+                        Mode.WEEK -> WeekCalendarView(
+                            uiState.selectDate,
+                            onDateSelected = { date ->
+                                viewModel.setSelectDate(date)
+                            }
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.size(12.dp))
@@ -149,21 +107,10 @@ fun CalendarScreen(onAddEditDiary: (date: String) -> Unit) {
                 modifier = Modifier
                     .weight(1f)
             ) {
-                DragHandler(
-                    onDragStart = { isDragging = true },
-                    onDrag = { offset ->
-                        with(density) {
-                            val dragAmountDp = offset.toDp()
-                            val newHeight = rawHeight + dragAmountDp
-                            rawHeight = max(ModeHeight.Week, min(ModeHeight.Month, newHeight))
-                        }
-                    },
-                    onDragEnd = { isDragging = false }
-                )
                 ScheduleContent(
-                    selectedDate,
+                    uiState.selectDate,
                     onClick = {
-                        onAddEditDiary(selectedDate.toString())
+                        onAddEditDiary(uiState.selectDate.toString())
                     },
                     modifier = Modifier
                         .fillMaxSize()
@@ -177,7 +124,7 @@ fun CalendarScreen(onAddEditDiary: (date: String) -> Unit) {
 }
 
 @Composable
-private fun Header(mode: Mode = Mode.MONTH, onChangeMode: (Mode) -> Unit = {}) {
+private fun Header(calendarMode: Mode = Mode.MONTH, onChangeMode: () -> Unit = {}) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -193,12 +140,10 @@ private fun Header(mode: Mode = Mode.MONTH, onChangeMode: (Mode) -> Unit = {}) {
         Row (
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            IconButton(onClick = {
-                onChangeMode(if (mode == Mode.WEEK) Mode.MONTH else Mode.WEEK)
-            }) {
+            IconButton(onClick = onChangeMode) {
                 Icon(
                     imageVector =
-                        if (mode == Mode.MONTH)
+                        if (calendarMode == Mode.MONTH)
                             Icons.Default.CalendarViewWeek
                         else
                             Icons.Default.CalendarViewMonth,

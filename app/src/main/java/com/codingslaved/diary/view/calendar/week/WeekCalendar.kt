@@ -21,29 +21,32 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.codingslaved.diary.R
 import com.codingslaved.diary.view.calendar.ModeHeight
+import com.codingslaved.diary.view.calendar.week.WeekViewModel
 import com.codingslaved.diary.view.calendar.week.WeekViewModel.Date
 import java.time.LocalDate
 
 @Composable
 fun WeekCalendarView(
     selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
+    onDateSelected: (LocalDate) -> Unit,
+    viewModel: WeekViewModel = viewModel<WeekViewModel>(),
 ) {
-    val dataSource = remember { WeekDataSource() }
-    var weekViewModel by remember(selectedDate) {
-        mutableStateOf(dataSource.getViewModel(selectedDate, selectedDate))
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(selectedDate) {
+            viewModel.updateSelectedDate(selectedDate)
     }
 
     Column(
@@ -55,26 +58,20 @@ fun WeekCalendarView(
         WeekHeader(
             selectedDate = selectedDate,
             onPrevClick = {
-                val newStart = weekViewModel.visibleDates.first().date.minusWeeks(1)
-                weekViewModel = dataSource.getViewModel(newStart, selectedDate)
+                val newStart = uiState.visibleDates.first().date.minusWeeks(1)
+                viewModel.generateVisibleDates(newStart)
             },
             onNextClick = {
-                val newStart = weekViewModel.visibleDates.last().date.plusDays(1)
-                weekViewModel = dataSource.getViewModel(newStart, selectedDate)
+                val newStart = uiState.visibleDates.last().date.plusDays(1)
+                viewModel.generateVisibleDates(newStart)
             }
         )
         Spacer(modifier = Modifier.size(8.dp))
         WeekContent(
             modifier = Modifier.weight(1f),
-            visibleDates = weekViewModel.visibleDates,
-            onDateClick = { date ->
-                onDateSelected(date.date)
-                // Update weekViewModel to reflect the new selection
-                weekViewModel = weekViewModel.copy(
-                    visibleDates = weekViewModel.visibleDates.map {
-                        it.copy(isSelected = it.date == date.date)
-                    }
-                )
+            visibleDates = uiState.visibleDates,
+            onDateClick = {
+                onDateSelected(it.date)
             }
         )
     }
